@@ -4894,9 +4894,41 @@
                             <button class="quick-action" onclick="document.getElementById('image-upload').click()" title="Carica immagine">📷</button>
                             <button class="quick-action" onclick="openCamera()" title="Apri fotocamera">📸</button>
                             <button class="quick-action" onclick="captureScreenshot()" title="Screenshot">🖼️</button>
+                            <button class="quick-action" id="input-mic-btn" onclick="toggleMicrophone()" title="Attiva microfono">🎤</button>
                         </div>
                         <textarea class="chat-textarea" id="chat-input" placeholder="Scrivi un messaggio o usa il microfono per parlare con GIDEON..." rows="1"></textarea>
                         <button class="send-btn" id="send-btn" title="Invia messaggio">➤</button>
+                    </div>
+                    
+                    <!-- Provider & Settings Bar -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 15px; background: rgba(0,0,0,0.3); border-top: 1px solid rgba(0,245,255,0.1);">
+                        <div style="display: flex; gap: 15px; align-items: center;">
+                            <label style="display: flex; align-items: center; gap: 5px; font-size: 12px; color: rgba(255,255,255,0.7);">
+                                🤖 Provider:
+                                <select id="ai-provider-select" onchange="changeAIProvider(this.value)" style="background: rgba(0,0,0,0.5); color: #00f5ff; border: 1px solid rgba(0,245,255,0.3); border-radius: 4px; padding: 4px 8px; font-size: 12px;">
+                                    <option value="openrouter" selected>OpenRouter</option>
+                                    <option value="groq">Groq (Fast)</option>
+                                    <option value="google">Google Gemini</option>
+                                    <option value="ollama">Ollama (Local)</option>
+                                </select>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 5px; font-size: 12px; color: rgba(255,255,255,0.7);">
+                                ⚡ Speed:
+                                <select id="response-mode-select" onchange="changeResponseMode(this.value)" style="background: rgba(0,0,0,0.5); color: #00f5ff; border: 1px solid rgba(0,245,255,0.3); border-radius: 4px; padding: 4px 8px; font-size: 12px;">
+                                    <option value="fast" selected>Fast</option>
+                                    <option value="eco">Eco</option>
+                                    <option value="deep">Deep</option>
+                                </select>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 5px; font-size: 12px; color: rgba(255,255,255,0.7);">
+                                <input type="checkbox" id="tts-toggle" checked onchange="toggleTTS(this.checked)" style="accent-color: #00f5ff;">
+                                🔊 TTS
+                            </label>
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <button onclick="clearChat()" style="background: transparent; border: 1px solid rgba(255,51,102,0.5); color: #ff3366; padding: 4px 10px; border-radius: 4px; font-size: 11px; cursor: pointer;">🗑️ Clear</button>
+                            <button onclick="exportChat()" style="background: transparent; border: 1px solid rgba(0,245,255,0.5); color: #00f5ff; padding: 4px 10px; border-radius: 4px; font-size: 11px; cursor: pointer;">📥 Export</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -5958,43 +5990,60 @@
         console.log('🚀 GIDEON SCRIPT LOADING...');
         
         // ============ CONNECTION STATUS ============
+        let connectionCheckCount = 0;
+        
         async function checkConnectionStatus() {
-            console.log('🔍 Checking connection status...');
+            connectionCheckCount++;
+            console.log(`🔍 [${connectionCheckCount}] Checking connection to ${API_BASE}...`);
+            
             const statusDot = document.getElementById('status-dot');
             const statusText = document.getElementById('status-text');
             
             if (!statusDot || !statusText) {
-                console.warn('⚠️ Status elements not found');
+                console.error('⚠️ Status elements not found! statusDot:', statusDot, 'statusText:', statusText);
                 return;
             }
             
             try {
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 3000);
+                const timeoutId = setTimeout(() => controller.abort(), 5000);
                 
-                console.log(`🔗 Fetching ${API_BASE}/health...`);
                 const response = await fetch(`${API_BASE}/health`, {
                     method: 'GET',
+                    mode: 'cors',
+                    cache: 'no-cache',
                     signal: controller.signal
                 });
                 
                 clearTimeout(timeoutId);
-                console.log(`📡 Response status: ${response.status}`);
                 
                 if (response.ok) {
-                    statusDot.style.background = 'var(--neon-green, #00ff00)';
-                    statusDot.style.boxShadow = '0 0 10px var(--neon-green, #00ff00)';
-                    statusText.textContent = 'ONLINE';
-                    statusText.style.color = 'var(--neon-green, #00ff00)';
-                    if (typeof state !== 'undefined') state.isConnected = true;
-                    console.log('✅ Connection OK - Status set to ONLINE');
+                    const data = await response.json();
+                    console.log(`✅ [${connectionCheckCount}] Backend ONLINE - Status: ${data.status}`);
+                    setOnlineStatus();
                 } else {
+                    console.warn(`⚠️ [${connectionCheckCount}] Backend returned: ${response.status}`);
                     setOfflineStatus();
                 }
             } catch (error) {
-                console.warn('❌ Connection check failed:', error.message);
+                console.error(`❌ [${connectionCheckCount}] Connection failed:`, error.message);
                 setOfflineStatus();
             }
+        }
+        
+        function setOnlineStatus() {
+            const statusDot = document.getElementById('status-dot');
+            const statusText = document.getElementById('status-text');
+            
+            if (statusDot) {
+                statusDot.style.background = '#00ff88';
+                statusDot.style.boxShadow = '0 0 15px #00ff88, 0 0 30px #00ff88';
+            }
+            if (statusText) {
+                statusText.textContent = 'ONLINE';
+                statusText.style.color = '#00ff88';
+            }
+            if (typeof state !== 'undefined') state.isConnected = true;
         }
         
         function setOfflineStatus() {
@@ -6002,16 +6051,31 @@
             const statusText = document.getElementById('status-text');
             
             if (statusDot) {
-                statusDot.style.background = 'var(--neon-red, #ff0000)';
-                statusDot.style.boxShadow = '0 0 10px var(--neon-red, #ff0000)';
+                statusDot.style.background = '#ff3366';
+                statusDot.style.boxShadow = '0 0 15px #ff3366';
             }
             if (statusText) {
                 statusText.textContent = 'OFFLINE';
-                statusText.style.color = 'var(--neon-red, #ff0000)';
+                statusText.style.color = '#ff3366';
             }
             if (typeof state !== 'undefined') state.isConnected = false;
-            console.log('❌ Status set to OFFLINE');
         }
+        
+        // Connection check - called both immediately and on DOMContentLoaded
+        (function immediateConnectionCheck() {
+            // Try immediately if elements exist
+            if (document.getElementById('status-dot') && document.getElementById('status-text')) {
+                checkConnectionStatus();
+            }
+            // Also schedule for after DOM load
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', () => {
+                    setTimeout(checkConnectionStatus, 100);
+                });
+            } else {
+                setTimeout(checkConnectionStatus, 100);
+            }
+        })();
         
         // ============ TOOLBAR FUNCTIONS ============
         
@@ -7825,6 +7889,64 @@ ${JSON.stringify(state, null, 2)}
                     }
                 });
             });
+        }
+        
+        // ============ PROVIDER & SETTINGS FUNCTIONS ============
+        function changeAIProvider(provider) {
+            console.log('🤖 Changing AI provider to:', provider);
+            state.aiProvider = provider;
+            addLog(`[AI] Provider changed to: ${provider}`);
+            
+            // Update backend preference (optional)
+            fetch(`${API_BASE}/api/system/provider`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ provider })
+            }).catch(err => console.warn('Could not update provider preference:', err));
+        }
+        
+        function changeResponseMode(mode) {
+            console.log('⚡ Changing response mode to:', mode);
+            state.responseMode = mode;
+            addLog(`[CHAT] Response mode: ${mode}`);
+            
+            // Update mode buttons if they exist
+            document.querySelectorAll('.response-mode-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.mode === mode);
+            });
+        }
+        
+        function toggleTTS(enabled) {
+            console.log('🔊 TTS:', enabled ? 'ON' : 'OFF');
+            state.isTTSEnabled = enabled;
+            addLog(`[TTS] ${enabled ? 'Enabled' : 'Disabled'}`);
+        }
+        
+        function clearChat() {
+            const messages = document.getElementById('chat-messages');
+            if (messages) {
+                messages.innerHTML = '';
+                state.messages = [];
+                addSystemMessage('💬 Chat cleared', 'info');
+                addLog('[CHAT] Chat cleared');
+            }
+        }
+        
+        function exportChat() {
+            const chatData = {
+                timestamp: new Date().toISOString(),
+                session: state.sessionId,
+                messages: state.messages
+            };
+            
+            const blob = new Blob([JSON.stringify(chatData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `gideon-chat-${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            addLog('[CHAT] Chat exported');
         }
         
         async function sendMessage() {
