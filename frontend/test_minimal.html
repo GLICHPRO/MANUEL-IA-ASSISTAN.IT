@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>GIDEON Test Chat</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            background: #0a0a12; 
+            color: white; 
+            font-family: 'Segoe UI', Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .header {
+            background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
+            padding: 20px;
+            border-bottom: 2px solid #00f5ff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .title { color: #00f5ff; font-size: 24px; font-weight: bold; }
+        .status { 
+            display: flex; 
+            align-items: center; 
+            gap: 10px;
+        }
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ff3366;
+        }
+        .status-dot.online { background: #00ff88; }
+        .datetime { color: #888; font-size: 14px; }
+        
+        .chat-area {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .message {
+            max-width: 80%;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 15px;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .message.user {
+            background: linear-gradient(135deg, #6200ee, #8000ff);
+            margin-left: auto;
+        }
+        .message.assistant {
+            background: linear-gradient(135deg, #1a1a2e, #2d2d44);
+            border: 1px solid #00f5ff33;
+        }
+        
+        .input-area {
+            padding: 20px;
+            background: #0f0f1a;
+            border-top: 1px solid #333;
+            display: flex;
+            gap: 10px;
+        }
+        #chat-input {
+            flex: 1;
+            background: #1a1a2e;
+            border: 1px solid #444;
+            border-radius: 10px;
+            padding: 15px;
+            color: white;
+            font-size: 16px;
+            resize: none;
+        }
+        #chat-input:focus {
+            outline: none;
+            border-color: #00f5ff;
+        }
+        .send-btn {
+            background: linear-gradient(135deg, #00f5ff, #0080ff);
+            border: none;
+            border-radius: 10px;
+            width: 60px;
+            height: 60px;
+            color: #000;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .send-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px #00f5ff55;
+        }
+        
+        .debug-btn {
+            background: rgba(255,102,0,0.2);
+            border: 1px solid #ff6600;
+            color: #ff6600;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .debug-btn:hover {
+            background: rgba(255,102,0,0.4);
+        }
+        
+        .tools {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .tool-btn {
+            background: rgba(0,245,255,0.1);
+            border: 1px solid #00f5ff44;
+            color: #00f5ff;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .tool-btn:hover {
+            background: rgba(0,245,255,0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="title">🤖 GIDEON 4.0 - Test Interface</div>
+        <div class="status">
+            <span class="datetime" id="datetime">Loading...</span>
+            <div class="status-dot" id="status-dot"></div>
+            <span id="status-text">Checking...</span>
+            <button class="debug-btn" onclick="toggleDebug()">🐛 DEBUG</button>
+        </div>
+    </div>
+    
+    <div class="chat-area" id="chat-messages">
+        <!-- Messages will appear here -->
+    </div>
+    
+    <div class="input-area">
+        <div style="flex: 1;">
+            <div class="tools">
+                <button class="tool-btn" onclick="testTTS()">🔊 Test TTS</button>
+                <button class="tool-btn" onclick="testCAM()">🎯 Test CAM</button>
+                <button class="tool-btn" onclick="clearChat()">🗑️ Clear</button>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <textarea id="chat-input" rows="2" placeholder="Scrivi un messaggio..."></textarea>
+                <button class="send-btn" onclick="sendMessage()">➤</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="debug-panel" style="display: none; position: fixed; bottom: 0; left: 0; right: 0; background: #1a1a2e; border-top: 2px solid #ff6600; padding: 10px; max-height: 200px; overflow-y: auto; font-family: monospace; font-size: 12px;">
+        <div id="debug-log"></div>
+    </div>
+    
+    <script>
+        const API_BASE = 'http://127.0.0.1:8001';
+        let isConnected = false;
+        let isTTSEnabled = true;
+        
+        function log(msg) {
+            const debugLog = document.getElementById('debug-log');
+            const time = new Date().toLocaleTimeString();
+            debugLog.innerHTML += `<div style="color: #00f5ff">[${time}] ${msg}</div>`;
+            debugLog.scrollTop = debugLog.scrollHeight;
+            console.log(`[${time}] ${msg}`);
+        }
+        
+        function toggleDebug() {
+            const panel = document.getElementById('debug-panel');
+            panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+        }
+        
+        function updateDateTime() {
+            const now = new Date();
+            document.getElementById('datetime').textContent = 
+                now.toLocaleDateString('it-IT') + ' ' + now.toLocaleTimeString('it-IT');
+        }
+        
+        async function checkConnection() {
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                if (response.ok) {
+                    isConnected = true;
+                    document.getElementById('status-dot').classList.add('online');
+                    document.getElementById('status-text').textContent = 'Online';
+                    log('✅ Server connected');
+                }
+            } catch (e) {
+                isConnected = false;
+                document.getElementById('status-dot').classList.remove('online');
+                document.getElementById('status-text').textContent = 'Offline';
+                log('❌ Server offline: ' + e.message);
+            }
+        }
+        
+        function addMessage(text, type) {
+            const container = document.getElementById('chat-messages');
+            const msg = document.createElement('div');
+            msg.className = `message ${type}`;
+            msg.innerHTML = text;
+            container.appendChild(msg);
+            container.scrollTop = container.scrollHeight;
+        }
+        
+        async function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if (!text) return;
+            
+            log(`Sending: ${text.substring(0, 50)}...`);
+            addMessage(text, 'user');
+            input.value = '';
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/chat/send`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: text })
+                });
+                
+                const data = await response.json();
+                log(`Response received`);
+                
+                const responseText = data.response || data.text || data.message || 'No response';
+                addMessage(responseText, 'assistant');
+                
+                if (isTTSEnabled) {
+                    speak(responseText);
+                }
+            } catch (error) {
+                log(`❌ Error: ${error.message}`);
+                addMessage('⚠️ Errore di connessione', 'assistant');
+            }
+        }
+        
+        async function speak(text) {
+            log(`TTS: ${text.substring(0, 30)}...`);
+            try {
+                const response = await fetch(`${API_BASE}/api/tts/speak`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text })
+                });
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const audio = new Audio(URL.createObjectURL(blob));
+                    audio.play().catch(e => log('Audio autoplay blocked'));
+                    log('✅ Audio playing');
+                }
+            } catch (e) {
+                log(`❌ TTS error: ${e.message}`);
+            }
+        }
+        
+        function testTTS() {
+            speak('Test voce GIDEON. Tutto funziona correttamente.');
+        }
+        
+        async function testCAM() {
+            log('Testing CAM...');
+            try {
+                const response = await fetch(`${API_BASE}/api/cam/status`);
+                const data = await response.json();
+                addMessage(`🎯 CAM Status: ${data.status}\nCrisis Level: ${data.crisis_level}\nAutonomy: ${data.autonomy_percentage}%`, 'assistant');
+                log('✅ CAM OK');
+            } catch (e) {
+                log(`❌ CAM error: ${e.message}`);
+            }
+        }
+        
+        function clearChat() {
+            document.getElementById('chat-messages').innerHTML = '';
+            log('Chat cleared');
+        }
+        
+        // Enter to send
+        document.getElementById('chat-input').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+        
+        // Initialize
+        updateDateTime();
+        setInterval(updateDateTime, 1000);
+        checkConnection();
+        setInterval(checkConnection, 10000);
+        
+        log('🚀 Test interface loaded');
+        addMessage('👋 Benvenuto! Questa è un\'interfaccia di test minimale.', 'assistant');
+    </script>
+</body>
+</html>

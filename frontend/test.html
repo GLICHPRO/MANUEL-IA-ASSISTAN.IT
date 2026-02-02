@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test WebSocket Gideon</title>
+</head>
+<body>
+    <h1>Test Connessione WebSocket</h1>
+    <div id="status">Connessione...</div>
+    <button onclick="sendTest()">Invia Test</button>
+    <div id="log"></div>
+
+    <script>
+        let ws = null;
+        
+        function log(msg) {
+            document.getElementById('log').innerHTML += `<p>${msg}</p>`;
+            console.log(msg);
+        }
+        
+        // Connetti WebSocket
+        ws = new WebSocket('ws://127.0.0.1:8001/ws');
+        
+        ws.onopen = () => {
+            document.getElementById('status').textContent = '✅ CONNESSO!';
+            document.getElementById('status').style.color = 'green';
+            log('✅ WebSocket connesso!');
+        };
+        
+        ws.onclose = () => {
+            document.getElementById('status').textContent = '❌ DISCONNESSO';
+            document.getElementById('status').style.color = 'red';
+            log('❌ WebSocket disconnesso');
+        };
+        
+        ws.onerror = (error) => {
+            document.getElementById('status').textContent = '⚠️ ERRORE';
+            document.getElementById('status').style.color = 'orange';
+            log('⚠️ Errore: ' + error);
+        };
+        
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            log('📩 Ricevuto: ' + JSON.stringify(data));
+        };
+        
+        function sendTest() {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    type: 'text_message',
+                    payload: { text: 'ciao test' }
+                }));
+                log('📤 Inviato: ciao test');
+            } else {
+                log('⚠️ WebSocket non connesso');
+            }
+        }
+    </script>
+</body>
+</html>

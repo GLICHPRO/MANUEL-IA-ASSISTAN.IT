@@ -1,0 +1,1761 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GIDEON Workflows - AI Automation Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --neon-cyan: #00f5ff;
+            --neon-magenta: #ff00ff;
+            --neon-blue: #0080ff;
+            --neon-purple: #8000ff;
+            --neon-green: #00ff88;
+            --neon-yellow: #ffcc00;
+            --neon-orange: #ff8800;
+            --neon-red: #ff3366;
+            --dark-bg: #0a0a0f;
+            --dark-card: rgba(15, 15, 25, 0.95);
+            --glass-border: rgba(0, 245, 255, 0.3);
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: var(--dark-bg);
+            min-height: 100vh;
+            color: #fff;
+            overflow-x: hidden;
+        }
+        
+        /* Background Effects */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: 
+                linear-gradient(90deg, rgba(0,245,255,0.02) 1px, transparent 1px),
+                linear-gradient(rgba(0,245,255,0.02) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .glow-orb {
+            position: fixed;
+            width: 500px; height: 500px;
+            border-radius: 50%;
+            filter: blur(100px);
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .glow-orb-1 { top: -10%; left: -10%; background: radial-gradient(circle, rgba(0,245,255,0.15) 0%, transparent 70%); }
+        .glow-orb-2 { bottom: -10%; right: -10%; background: radial-gradient(circle, rgba(255,0,255,0.1) 0%, transparent 70%); }
+        .glow-orb-3 { top: 40%; right: 20%; background: radial-gradient(circle, rgba(0,255,136,0.08) 0%, transparent 70%); }
+        
+        /* Header */
+        .header {
+            background: var(--dark-card);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(10px);
+        }
+        
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8em;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--neon-cyan), var(--neon-magenta));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .logo i {
+            font-size: 1.2em;
+            -webkit-text-fill-color: var(--neon-cyan);
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .header-btn {
+            padding: 10px 20px;
+            border: 1px solid var(--glass-border);
+            background: transparent;
+            color: var(--neon-cyan);
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.95em;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .header-btn:hover {
+            background: var(--neon-cyan);
+            color: var(--dark-bg);
+            box-shadow: 0 0 20px rgba(0,245,255,0.4);
+        }
+        
+        .header-btn.primary {
+            background: linear-gradient(135deg, var(--neon-cyan), var(--neon-blue));
+            color: var(--dark-bg);
+            border: none;
+        }
+        
+        /* Main Layout */
+        .main-container {
+            display: flex;
+            height: calc(100vh - 70px);
+        }
+        
+        /* Sidebar - Service Palette */
+        .sidebar {
+            width: 280px;
+            background: var(--dark-card);
+            border-right: 1px solid var(--glass-border);
+            padding: 20px;
+            overflow-y: auto;
+            backdrop-filter: blur(10px);
+        }
+        
+        .sidebar-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9em;
+            color: var(--neon-cyan);
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .service-category {
+            margin-bottom: 25px;
+        }
+        
+        .category-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: rgba(0,245,255,0.05);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .category-header:hover {
+            background: rgba(0,245,255,0.1);
+        }
+        
+        .category-icon {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+        
+        .category-icon.voice { background: linear-gradient(135deg, var(--neon-green), #00cc66); }
+        .category-icon.chat { background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple)); }
+        .category-icon.image { background: linear-gradient(135deg, var(--neon-magenta), #cc00cc); }
+        .category-icon.video { background: linear-gradient(135deg, var(--neon-orange), var(--neon-red)); }
+        .category-icon.music { background: linear-gradient(135deg, var(--neon-yellow), var(--neon-orange)); }
+        .category-icon.automation { background: linear-gradient(135deg, var(--neon-cyan), var(--neon-blue)); }
+        
+        .category-name {
+            font-weight: 600;
+            font-size: 1em;
+        }
+        
+        .service-list {
+            display: grid;
+            gap: 8px;
+            padding-left: 10px;
+        }
+        
+        .service-item {
+            padding: 10px 12px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 8px;
+            cursor: grab;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9em;
+        }
+        
+        .service-item:hover {
+            background: rgba(0,245,255,0.1);
+            border-color: var(--neon-cyan);
+            transform: translateX(5px);
+        }
+        
+        .service-item:active {
+            cursor: grabbing;
+        }
+        
+        .service-item.dragging {
+            opacity: 0.5;
+            border-color: var(--neon-magenta);
+        }
+        
+        .service-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        
+        .service-dot.available { background: var(--neon-green); box-shadow: 0 0 8px var(--neon-green); }
+        .service-dot.unavailable { background: #555; }
+        
+        /* Canvas Area */
+        .canvas-area {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .workflow-canvas {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background-image: 
+                radial-gradient(circle, rgba(0,245,255,0.1) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+        
+        .canvas-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        
+        .canvas-overlay i {
+            font-size: 4em;
+            color: var(--neon-cyan);
+            margin-bottom: 20px;
+        }
+        
+        .canvas-overlay-text {
+            font-size: 1.3em;
+            color: #666;
+        }
+        
+        /* Workflow Nodes */
+        .workflow-node {
+            position: absolute;
+            min-width: 200px;
+            background: var(--dark-card);
+            border: 2px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 15px;
+            cursor: move;
+            transition: all 0.3s;
+            z-index: 10;
+        }
+        
+        .workflow-node:hover {
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 30px rgba(0,245,255,0.2);
+        }
+        
+        .workflow-node.selected {
+            border-color: var(--neon-magenta);
+            box-shadow: 0 0 40px rgba(255,0,255,0.3);
+        }
+        
+        .node-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .node-title {
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .node-type-badge {
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.7em;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+        
+        .node-type-badge.trigger { background: var(--neon-green); color: #000; }
+        .node-type-badge.action { background: var(--neon-blue); color: #fff; }
+        .node-type-badge.condition { background: var(--neon-yellow); color: #000; }
+        
+        .node-delete {
+            width: 24px;
+            height: 24px;
+            border: none;
+            background: rgba(255,0,0,0.2);
+            color: var(--neon-red);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .node-delete:hover {
+            background: var(--neon-red);
+            color: #fff;
+        }
+        
+        .node-content {
+            font-size: 0.9em;
+            color: #aaa;
+        }
+        
+        .node-input, .node-output {
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: 2px solid var(--neon-cyan);
+            background: var(--dark-bg);
+            cursor: crosshair;
+        }
+        
+        .node-input { top: 50%; left: -7px; transform: translateY(-50%); }
+        .node-output { top: 50%; right: -7px; transform: translateY(-50%); }
+        
+        .node-input:hover, .node-output:hover {
+            background: var(--neon-cyan);
+            box-shadow: 0 0 15px var(--neon-cyan);
+        }
+        
+        /* Connection Lines (SVG) */
+        .connections-layer {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 5;
+        }
+        
+        .connection-line {
+            stroke: var(--neon-cyan);
+            stroke-width: 2;
+            fill: none;
+            filter: drop-shadow(0 0 4px var(--neon-cyan));
+        }
+        
+        /* Right Panel - Properties */
+        .properties-panel {
+            width: 320px;
+            background: var(--dark-card);
+            border-left: 1px solid var(--glass-border);
+            padding: 20px;
+            overflow-y: auto;
+            backdrop-filter: blur(10px);
+        }
+        
+        .panel-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9em;
+            color: var(--neon-cyan);
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .property-group {
+            margin-bottom: 20px;
+        }
+        
+        .property-label {
+            font-size: 0.85em;
+            color: #888;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .property-input {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: #fff;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+        
+        .property-input:focus {
+            outline: none;
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 15px rgba(0,245,255,0.2);
+        }
+        
+        .property-select {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: #fff;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1em;
+            cursor: pointer;
+        }
+        
+        .property-textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 12px 15px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: #fff;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9em;
+            resize: vertical;
+        }
+        
+        /* Quick Actions */
+        .quick-actions {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            padding: 15px 25px;
+            background: var(--dark-card);
+            border: 1px solid var(--glass-border);
+            border-radius: 50px;
+            backdrop-filter: blur(10px);
+            z-index: 100;
+        }
+        
+        .quick-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .quick-btn.run {
+            background: linear-gradient(135deg, var(--neon-green), #00cc66);
+            color: #000;
+        }
+        
+        .quick-btn.run:hover {
+            box-shadow: 0 0 30px rgba(0,255,136,0.5);
+            transform: scale(1.05);
+        }
+        
+        .quick-btn.save {
+            background: linear-gradient(135deg, var(--neon-cyan), var(--neon-blue));
+            color: #000;
+        }
+        
+        .quick-btn.clear {
+            background: transparent;
+            border: 1px solid var(--glass-border);
+            color: var(--neon-cyan);
+        }
+        
+        /* Workflow Templates Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .modal-overlay.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            width: 90%;
+            max-width: 900px;
+            max-height: 80vh;
+            background: var(--dark-card);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        
+        .modal-header {
+            padding: 20px 25px;
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.3em;
+            color: var(--neon-cyan);
+        }
+        
+        .modal-close {
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.2em;
+            transition: all 0.3s;
+        }
+        
+        .modal-close:hover {
+            background: var(--neon-red);
+        }
+        
+        .modal-body {
+            padding: 25px;
+            overflow-y: auto;
+            max-height: 60vh;
+        }
+        
+        /* Template Cards */
+        .templates-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .template-card {
+            padding: 20px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .template-card:hover {
+            border-color: var(--neon-cyan);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,245,255,0.2);
+        }
+        
+        .template-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+        }
+        
+        .template-name {
+            font-weight: 600;
+            font-size: 1.1em;
+            margin-bottom: 8px;
+        }
+        
+        .template-desc {
+            font-size: 0.85em;
+            color: #888;
+            line-height: 1.4;
+        }
+        
+        /* Execution Log */
+        .execution-log {
+            position: fixed;
+            bottom: 100px;
+            right: 30px;
+            width: 400px;
+            max-height: 300px;
+            background: var(--dark-card);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            overflow: hidden;
+            display: none;
+            z-index: 50;
+        }
+        
+        .execution-log.active {
+            display: block;
+        }
+        
+        .log-header {
+            padding: 12px 15px;
+            background: rgba(0,0,0,0.3);
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+        }
+        
+        .log-content {
+            padding: 15px;
+            max-height: 240px;
+            overflow-y: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85em;
+        }
+        
+        .log-entry {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .log-entry.success { color: var(--neon-green); }
+        .log-entry.error { color: var(--neon-red); }
+        .log-entry.info { color: var(--neon-cyan); }
+        
+        /* Animations */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .node-running {
+            animation: pulse 1s ease-in-out infinite;
+            border-color: var(--neon-green) !important;
+        }
+        
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .sidebar { width: 60px; padding: 10px; }
+            .sidebar-title, .category-name, .service-list { display: none; }
+            .category-header { justify-content: center; }
+            .properties-panel { width: 280px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="glow-orb glow-orb-1"></div>
+    <div class="glow-orb glow-orb-2"></div>
+    <div class="glow-orb glow-orb-3"></div>
+    
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <i class="fas fa-robot"></i>
+            GIDEON WORKFLOWS
+        </div>
+        <div class="header-actions">
+            <button class="header-btn" onclick="openTemplates()">
+                <i class="fas fa-folder-open"></i>
+                Templates
+            </button>
+            <button class="header-btn" onclick="importWorkflow()">
+                <i class="fas fa-file-import"></i>
+                Import
+            </button>
+            <button class="header-btn" onclick="exportWorkflow()">
+                <i class="fas fa-file-export"></i>
+                Export
+            </button>
+            <button class="header-btn primary" onclick="window.location.href='chat.html'">
+                <i class="fas fa-comments"></i>
+                Chat
+            </button>
+        </div>
+    </header>
+    
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Sidebar - Service Palette -->
+        <aside class="sidebar">
+            <div class="sidebar-title">AI Services</div>
+            
+            <!-- VOICE Category -->
+            <div class="service-category">
+                <div class="category-header">
+                    <div class="category-icon voice"><i class="fas fa-microphone"></i></div>
+                    <span class="category-name">Voice</span>
+                </div>
+                <div class="service-list">
+                    <div class="service-item" draggable="true" data-service="elevenlabs" data-type="voice">
+                        <span class="service-dot available"></span>
+                        ElevenLabs
+                    </div>
+                    <div class="service-item" draggable="true" data-service="openai_tts" data-type="voice">
+                        <span class="service-dot unavailable"></span>
+                        OpenAI TTS
+                    </div>
+                    <div class="service-item" draggable="true" data-service="edge_tts" data-type="voice">
+                        <span class="service-dot available"></span>
+                        Edge TTS (Free)
+                    </div>
+                </div>
+            </div>
+            
+            <!-- CHAT Category -->
+            <div class="service-category">
+                <div class="category-header">
+                    <div class="category-icon chat"><i class="fas fa-comments"></i></div>
+                    <span class="category-name">Chat / LLM</span>
+                </div>
+                <div class="service-list">
+                    <div class="service-item" draggable="true" data-service="openrouter" data-type="chat">
+                        <span class="service-dot available"></span>
+                        OpenRouter (Free)
+                    </div>
+                    <div class="service-item" draggable="true" data-service="openai" data-type="chat">
+                        <span class="service-dot unavailable"></span>
+                        ChatGPT / GPT-4
+                    </div>
+                    <div class="service-item" draggable="true" data-service="anthropic" data-type="chat">
+                        <span class="service-dot unavailable"></span>
+                        Claude 3.5
+                    </div>
+                    <div class="service-item" draggable="true" data-service="google" data-type="chat">
+                        <span class="service-dot unavailable"></span>
+                        Gemini 2.0
+                    </div>
+                </div>
+            </div>
+            
+            <!-- IMAGE Category -->
+            <div class="service-category">
+                <div class="category-header">
+                    <div class="category-icon image"><i class="fas fa-image"></i></div>
+                    <span class="category-name">Image</span>
+                </div>
+                <div class="service-list">
+                    <div class="service-item" draggable="true" data-service="dalle" data-type="image">
+                        <span class="service-dot unavailable"></span>
+                        DALL-E 3
+                    </div>
+                    <div class="service-item" draggable="true" data-service="stability" data-type="image">
+                        <span class="service-dot unavailable"></span>
+                        Stable Diffusion
+                    </div>
+                    <div class="service-item" draggable="true" data-service="seedream" data-type="image">
+                        <span class="service-dot unavailable"></span>
+                        Seedream 3.0
+                    </div>
+                    <div class="service-item" draggable="true" data-service="flux" data-type="image">
+                        <span class="service-dot unavailable"></span>
+                        Flux / SDXL
+                    </div>
+                </div>
+            </div>
+            
+            <!-- VIDEO Category -->
+            <div class="service-category">
+                <div class="category-header">
+                    <div class="category-icon video"><i class="fas fa-video"></i></div>
+                    <span class="category-name">Video</span>
+                </div>
+                <div class="service-list">
+                    <div class="service-item" draggable="true" data-service="veo" data-type="video">
+                        <span class="service-dot unavailable"></span>
+                        Veo 3.1 (Google)
+                    </div>
+                    <div class="service-item" draggable="true" data-service="sora" data-type="video">
+                        <span class="service-dot unavailable"></span>
+                        Sora 2 (OpenAI)
+                    </div>
+                    <div class="service-item" draggable="true" data-service="kling" data-type="video">
+                        <span class="service-dot unavailable"></span>
+                        Kling AI
+                    </div>
+                    <div class="service-item" draggable="true" data-service="heygen" data-type="video">
+                        <span class="service-dot unavailable"></span>
+                        HeyGen (Avatars)
+                    </div>
+                    <div class="service-item" draggable="true" data-service="runway" data-type="video">
+                        <span class="service-dot unavailable"></span>
+                        Runway Gen-3
+                    </div>
+                    <div class="service-item" draggable="true" data-service="seedvr" data-type="video">
+                        <span class="service-dot unavailable"></span>
+                        SeedVR (360°/VR)
+                    </div>
+                    <div class="service-item" draggable="true" data-service="luma" data-type="video">
+                        <span class="service-dot unavailable"></span>
+                        Luma Dream Machine
+                    </div>
+                    <div class="service-item" draggable="true" data-service="pika" data-type="video">
+                        <span class="service-dot unavailable"></span>
+                        Pika Labs
+                    </div>
+                </div>
+            </div>
+            
+            <!-- MUSIC Category -->
+            <div class="service-category">
+                <div class="category-header">
+                    <div class="category-icon music"><i class="fas fa-music"></i></div>
+                    <span class="category-name">Music</span>
+                </div>
+                <div class="service-list">
+                    <div class="service-item" draggable="true" data-service="suno" data-type="music">
+                        <span class="service-dot unavailable"></span>
+                        Suno AI
+                    </div>
+                    <div class="service-item" draggable="true" data-service="udio" data-type="music">
+                        <span class="service-dot unavailable"></span>
+                        Udio
+                    </div>
+                </div>
+            </div>
+            
+            <!-- AUTOMATION Category -->
+            <div class="service-category">
+                <div class="category-header">
+                    <div class="category-icon automation"><i class="fas fa-cogs"></i></div>
+                    <span class="category-name">Automation</span>
+                </div>
+                <div class="service-list">
+                    <div class="service-item" draggable="true" data-service="trigger_schedule" data-type="trigger">
+                        <span class="service-dot available"></span>
+                        Schedule Trigger
+                    </div>
+                    <div class="service-item" draggable="true" data-service="trigger_webhook" data-type="trigger">
+                        <span class="service-dot available"></span>
+                        Webhook Trigger
+                    </div>
+                    <div class="service-item" draggable="true" data-service="condition" data-type="condition">
+                        <span class="service-dot available"></span>
+                        IF / Condition
+                    </div>
+                    <div class="service-item" draggable="true" data-service="loop" data-type="loop">
+                        <span class="service-dot available"></span>
+                        Loop / Repeat
+                    </div>
+                    <div class="service-item" draggable="true" data-service="delay" data-type="delay">
+                        <span class="service-dot available"></span>
+                        Delay / Wait
+                    </div>
+                    <div class="service-item" draggable="true" data-service="http" data-type="action">
+                        <span class="service-dot available"></span>
+                        HTTP Request
+                    </div>
+                    <div class="service-item" draggable="true" data-service="email" data-type="action">
+                        <span class="service-dot available"></span>
+                        Send Email
+                    </div>
+                    <div class="service-item" draggable="true" data-service="file" data-type="action">
+                        <span class="service-dot available"></span>
+                        File Operations
+                    </div>
+                </div>
+            </div>
+        </aside>
+        
+        <!-- Canvas Area -->
+        <div class="canvas-area">
+            <svg class="connections-layer" id="connectionsLayer"></svg>
+            <div class="workflow-canvas" id="workflowCanvas">
+                <div class="canvas-overlay" id="canvasOverlay">
+                    <i class="fas fa-project-diagram"></i>
+                    <div class="canvas-overlay-text">
+                        Trascina i servizi qui per creare il tuo workflow
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Properties Panel -->
+        <aside class="properties-panel" id="propertiesPanel">
+            <div class="panel-title">
+                <i class="fas fa-sliders-h"></i>
+                Proprietà
+            </div>
+            
+            <div id="propertiesContent">
+                <div style="color: #666; text-align: center; padding: 40px 20px;">
+                    <i class="fas fa-mouse-pointer" style="font-size: 2em; margin-bottom: 15px;"></i>
+                    <p>Seleziona un nodo per vedere le sue proprietà</p>
+                </div>
+            </div>
+        </aside>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+        <button class="quick-btn run" onclick="runWorkflow()">
+            <i class="fas fa-play"></i>
+            Esegui Workflow
+        </button>
+        <button class="quick-btn save" onclick="saveWorkflow()">
+            <i class="fas fa-save"></i>
+            Salva
+        </button>
+        <button class="quick-btn clear" onclick="clearCanvas()">
+            <i class="fas fa-trash-alt"></i>
+            Pulisci
+        </button>
+    </div>
+    
+    <!-- Execution Log -->
+    <div class="execution-log" id="executionLog">
+        <div class="log-header">
+            <span><i class="fas fa-terminal"></i> Execution Log</span>
+            <button class="modal-close" onclick="closeLog()" style="width:24px;height:24px;font-size:0.9em;">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="log-content" id="logContent"></div>
+    </div>
+    
+    <!-- Templates Modal -->
+    <div class="modal-overlay" id="templatesModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-title">
+                    <i class="fas fa-folder-open"></i>
+                    Workflow Templates
+                </span>
+                <button class="modal-close" onclick="closeTemplates()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="templates-grid">
+                    <div class="template-card" onclick="loadTemplate('content_creator')">
+                        <div class="template-icon" style="background: linear-gradient(135deg, var(--neon-magenta), var(--neon-purple));">
+                            <i class="fas fa-paint-brush"></i>
+                        </div>
+                        <div class="template-name">Content Creator</div>
+                        <div class="template-desc">Genera immagini, video e musica automaticamente da un prompt testuale</div>
+                    </div>
+                    
+                    <div class="template-card" onclick="loadTemplate('video_production')">
+                        <div class="template-icon" style="background: linear-gradient(135deg, var(--neon-orange), var(--neon-red));">
+                            <i class="fas fa-film"></i>
+                        </div>
+                        <div class="template-name">Video Production</div>
+                        <div class="template-desc">Pipeline completa: script → immagini → video → voice-over → export</div>
+                    </div>
+                    
+                    <div class="template-card" onclick="loadTemplate('daily_report')">
+                        <div class="template-icon" style="background: linear-gradient(135deg, var(--neon-cyan), var(--neon-blue));">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
+                        <div class="template-name">Daily Report</div>
+                        <div class="template-desc">Analizza dati, genera report e invialo via email ogni giorno</div>
+                    </div>
+                    
+                    <div class="template-card" onclick="loadTemplate('voice_assistant')">
+                        <div class="template-icon" style="background: linear-gradient(135deg, var(--neon-green), #00cc66);">
+                            <i class="fas fa-microphone"></i>
+                        </div>
+                        <div class="template-name">Voice Assistant</div>
+                        <div class="template-desc">Ricevi comandi vocali, elaborali con AI e rispondi con TTS</div>
+                    </div>
+                    
+                    <div class="template-card" onclick="loadTemplate('social_media')">
+                        <div class="template-icon" style="background: linear-gradient(135deg, var(--neon-yellow), var(--neon-orange));">
+                            <i class="fas fa-share-alt"></i>
+                        </div>
+                        <div class="template-name">Social Media</div>
+                        <div class="template-desc">Crea contenuti per Instagram, TikTok e YouTube automaticamente</div>
+                    </div>
+                    
+                    <div class="template-card" onclick="loadTemplate('research')">
+                        <div class="template-icon" style="background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <div class="template-name">AI Research</div>
+                        <div class="template-desc">Cerca info, analizza con AI e crea una presentazione</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // ==================================================
+        // GIDEON WORKFLOW ENGINE - Frontend
+        // ==================================================
+        
+        const API_BASE = 'http://127.0.0.1:8001/api';
+        
+        // State
+        let nodes = [];
+        let connections = [];
+        let selectedNode = null;
+        let isDragging = false;
+        let dragOffset = { x: 0, y: 0 };
+        let nodeIdCounter = 0;
+        let isConnecting = false;
+        let connectionStart = null;
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            initDragAndDrop();
+            initCanvas();
+            loadServiceStatus();
+        });
+        
+        // Load service availability
+        async function loadServiceStatus() {
+            try {
+                const response = await fetch(`${API_BASE}/hub/services`);
+                const data = await response.json();
+                // Update service dots based on availability
+                console.log('Services loaded:', data);
+            } catch (e) {
+                console.log('Backend not available, using defaults');
+            }
+        }
+        
+        // Initialize Drag & Drop
+        function initDragAndDrop() {
+            const serviceItems = document.querySelectorAll('.service-item');
+            const canvas = document.getElementById('workflowCanvas');
+            
+            serviceItems.forEach(item => {
+                item.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('service', item.dataset.service);
+                    e.dataTransfer.setData('type', item.dataset.type);
+                    e.dataTransfer.setData('name', item.textContent.trim());
+                    item.classList.add('dragging');
+                });
+                
+                item.addEventListener('dragend', () => {
+                    item.classList.remove('dragging');
+                });
+            });
+            
+            canvas.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                canvas.style.background = 'rgba(0,245,255,0.05)';
+            });
+            
+            canvas.addEventListener('dragleave', () => {
+                canvas.style.background = '';
+            });
+            
+            canvas.addEventListener('drop', (e) => {
+                e.preventDefault();
+                canvas.style.background = '';
+                
+                const service = e.dataTransfer.getData('service');
+                const type = e.dataTransfer.getData('type');
+                const name = e.dataTransfer.getData('name');
+                
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left - 100;
+                const y = e.clientY - rect.top - 40;
+                
+                createNode(service, type, name, x, y);
+            });
+        }
+        
+        // Initialize Canvas
+        function initCanvas() {
+            const canvas = document.getElementById('workflowCanvas');
+            
+            canvas.addEventListener('click', (e) => {
+                if (e.target === canvas || e.target.id === 'canvasOverlay') {
+                    deselectAll();
+                }
+            });
+        }
+        
+        // Create Node
+        function createNode(service, type, name, x, y) {
+            const id = `node_${++nodeIdCounter}`;
+            
+            // Hide overlay
+            document.getElementById('canvasOverlay').style.display = 'none';
+            
+            const node = {
+                id,
+                service,
+                type,
+                name,
+                x,
+                y,
+                config: getDefaultConfig(service)
+            };
+            
+            nodes.push(node);
+            renderNode(node);
+            selectNode(id);
+        }
+        
+        // Get default config for service
+        function getDefaultConfig(service) {
+            const configs = {
+                openrouter: { model: 'qwen/qwen3-4b:free', temperature: 0.7 },
+                elevenlabs: { voice: 'Rachel', model: 'eleven_multilingual_v2' },
+                edge_tts: { voice: 'it-IT-GiuseppeNeural', rate: '+0%' },
+                dalle: { size: '1024x1024', quality: 'standard' },
+                veo: { model: 'veo-3.1-generate-preview', aspect_ratio: '16:9', resolution: '720p' },
+                sora: { model: 'sora-2', duration: 5 },
+                kling: { model: 'kling-video', duration: 5 },
+                heygen: { avatar: 'default', voice: 'en-US' },
+                suno: { style: 'pop', duration: 30 },
+                trigger_schedule: { cron: '0 9 * * *' },
+                trigger_webhook: { path: '/webhook/custom' },
+                condition: { expression: '' },
+                delay: { seconds: 5 },
+                http: { method: 'GET', url: '' },
+                email: { to: '', subject: '' }
+            };
+            return configs[service] || {};
+        }
+        
+        // Render Node
+        function renderNode(node) {
+            const canvas = document.getElementById('workflowCanvas');
+            
+            const nodeEl = document.createElement('div');
+            nodeEl.className = 'workflow-node';
+            nodeEl.id = node.id;
+            nodeEl.style.left = node.x + 'px';
+            nodeEl.style.top = node.y + 'px';
+            
+            const typeClass = node.type === 'trigger' ? 'trigger' : 
+                              node.type === 'condition' ? 'condition' : 'action';
+            
+            nodeEl.innerHTML = `
+                <div class="node-header">
+                    <div class="node-title">
+                        <span class="node-type-badge ${typeClass}">${node.type}</span>
+                        ${node.name}
+                    </div>
+                    <button class="node-delete" onclick="deleteNode('${node.id}')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="node-content">
+                    ${getNodeDescription(node)}
+                </div>
+                <div class="node-input" onclick="startConnection('${node.id}', 'input')"></div>
+                <div class="node-output" onclick="startConnection('${node.id}', 'output')"></div>
+            `;
+            
+            // Make draggable
+            nodeEl.addEventListener('mousedown', (e) => {
+                if (e.target.classList.contains('node-input') || 
+                    e.target.classList.contains('node-output') ||
+                    e.target.classList.contains('node-delete')) return;
+                
+                selectNode(node.id);
+                isDragging = true;
+                dragOffset = {
+                    x: e.clientX - nodeEl.offsetLeft,
+                    y: e.clientY - nodeEl.offsetTop
+                };
+            });
+            
+            canvas.appendChild(nodeEl);
+        }
+        
+        // Get node description
+        function getNodeDescription(node) {
+            switch (node.service) {
+                case 'openrouter':
+                    return `Model: ${node.config.model || 'auto'}`;
+                case 'elevenlabs':
+                case 'edge_tts':
+                    return `Voice: ${node.config.voice || 'default'}`;
+                case 'veo':
+                    return `${node.config.resolution} • ${node.config.aspect_ratio}`;
+                case 'sora':
+                    return `Duration: ${node.config.duration}s`;
+                case 'trigger_schedule':
+                    return `Cron: ${node.config.cron}`;
+                case 'delay':
+                    return `Wait: ${node.config.seconds}s`;
+                default:
+                    return 'Click to configure';
+            }
+        }
+        
+        // Document mouse events for dragging
+        document.addEventListener('mousemove', (e) => {
+            if (isDragging && selectedNode) {
+                const nodeEl = document.getElementById(selectedNode);
+                const canvas = document.getElementById('workflowCanvas');
+                const rect = canvas.getBoundingClientRect();
+                
+                const x = e.clientX - dragOffset.x;
+                const y = e.clientY - dragOffset.y;
+                
+                nodeEl.style.left = x + 'px';
+                nodeEl.style.top = y + 'px';
+                
+                // Update node position in state
+                const node = nodes.find(n => n.id === selectedNode);
+                if (node) {
+                    node.x = x;
+                    node.y = y;
+                }
+                
+                updateConnections();
+            }
+        });
+        
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+        
+        // Select Node
+        function selectNode(id) {
+            deselectAll();
+            selectedNode = id;
+            const nodeEl = document.getElementById(id);
+            if (nodeEl) nodeEl.classList.add('selected');
+            
+            const node = nodes.find(n => n.id === id);
+            if (node) showProperties(node);
+        }
+        
+        // Deselect All
+        function deselectAll() {
+            selectedNode = null;
+            document.querySelectorAll('.workflow-node').forEach(el => {
+                el.classList.remove('selected');
+            });
+            hideProperties();
+        }
+        
+        // Delete Node
+        function deleteNode(id) {
+            const nodeEl = document.getElementById(id);
+            if (nodeEl) nodeEl.remove();
+            
+            nodes = nodes.filter(n => n.id !== id);
+            connections = connections.filter(c => c.from !== id && c.to !== id);
+            updateConnections();
+            
+            if (selectedNode === id) {
+                deselectAll();
+            }
+            
+            if (nodes.length === 0) {
+                document.getElementById('canvasOverlay').style.display = '';
+            }
+        }
+        
+        // Connection handling
+        function startConnection(nodeId, portType) {
+            if (!isConnecting) {
+                isConnecting = true;
+                connectionStart = { nodeId, portType };
+                // Visual feedback
+            } else {
+                if (connectionStart.nodeId !== nodeId) {
+                    // Create connection
+                    const connection = connectionStart.portType === 'output' ? 
+                        { from: connectionStart.nodeId, to: nodeId } :
+                        { from: nodeId, to: connectionStart.nodeId };
+                    
+                    // Check if connection already exists
+                    if (!connections.find(c => c.from === connection.from && c.to === connection.to)) {
+                        connections.push(connection);
+                        updateConnections();
+                    }
+                }
+                isConnecting = false;
+                connectionStart = null;
+            }
+        }
+        
+        // Update connection lines
+        function updateConnections() {
+            const svg = document.getElementById('connectionsLayer');
+            svg.innerHTML = '';
+            
+            connections.forEach(conn => {
+                const fromNode = document.getElementById(conn.from);
+                const toNode = document.getElementById(conn.to);
+                
+                if (fromNode && toNode) {
+                    const fromRect = fromNode.getBoundingClientRect();
+                    const toRect = toNode.getBoundingClientRect();
+                    const canvasRect = document.getElementById('workflowCanvas').getBoundingClientRect();
+                    
+                    const x1 = fromRect.right - canvasRect.left;
+                    const y1 = fromRect.top + fromRect.height/2 - canvasRect.top;
+                    const x2 = toRect.left - canvasRect.left;
+                    const y2 = toRect.top + toRect.height/2 - canvasRect.top;
+                    
+                    // Bezier curve
+                    const cx = (x1 + x2) / 2;
+                    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    path.setAttribute('d', `M${x1},${y1} C${cx},${y1} ${cx},${y2} ${x2},${y2}`);
+                    path.setAttribute('class', 'connection-line');
+                    svg.appendChild(path);
+                }
+            });
+        }
+        
+        // Show Properties Panel
+        function showProperties(node) {
+            const content = document.getElementById('propertiesContent');
+            
+            let html = `
+                <div class="property-group">
+                    <div class="property-label">Nome Nodo</div>
+                    <input type="text" class="property-input" value="${node.name}" 
+                           onchange="updateNodeProperty('${node.id}', 'name', this.value)">
+                </div>
+            `;
+            
+            // Add service-specific properties
+            switch (node.service) {
+                case 'openrouter':
+                    html += `
+                        <div class="property-group">
+                            <div class="property-label">Modello</div>
+                            <select class="property-select" onchange="updateNodeConfig('${node.id}', 'model', this.value)">
+                                <option value="qwen/qwen3-4b:free" ${node.config.model === 'qwen/qwen3-4b:free' ? 'selected' : ''}>Qwen 3 4B (Free)</option>
+                                <option value="google/gemini-2.0-flash-exp:free" ${node.config.model === 'google/gemini-2.0-flash-exp:free' ? 'selected' : ''}>Gemini 2.0 Flash (Free)</option>
+                                <option value="meta-llama/llama-3.3-70b-instruct:free" ${node.config.model === 'meta-llama/llama-3.3-70b-instruct:free' ? 'selected' : ''}>Llama 3.3 70B (Free)</option>
+                            </select>
+                        </div>
+                        <div class="property-group">
+                            <div class="property-label">System Prompt</div>
+                            <textarea class="property-textarea" placeholder="Istruzioni per l'AI..."
+                                      onchange="updateNodeConfig('${node.id}', 'system_prompt', this.value)">${node.config.system_prompt || ''}</textarea>
+                        </div>
+                        <div class="property-group">
+                            <div class="property-label">Temperature</div>
+                            <input type="range" min="0" max="1" step="0.1" value="${node.config.temperature || 0.7}"
+                                   onchange="updateNodeConfig('${node.id}', 'temperature', parseFloat(this.value))">
+                        </div>
+                    `;
+                    break;
+                    
+                case 'veo':
+                    html += `
+                        <div class="property-group">
+                            <div class="property-label">Modello</div>
+                            <select class="property-select" onchange="updateNodeConfig('${node.id}', 'model', this.value)">
+                                <option value="veo-3.1-generate-preview">Veo 3.1 Preview</option>
+                                <option value="veo-3.1-fast-preview">Veo 3.1 Fast</option>
+                                <option value="veo-2">Veo 2</option>
+                            </select>
+                        </div>
+                        <div class="property-group">
+                            <div class="property-label">Risoluzione</div>
+                            <select class="property-select" onchange="updateNodeConfig('${node.id}', 'resolution', this.value)">
+                                <option value="720p">720p</option>
+                                <option value="1080p">1080p</option>
+                                <option value="4k">4K</option>
+                            </select>
+                        </div>
+                        <div class="property-group">
+                            <div class="property-label">Aspect Ratio</div>
+                            <select class="property-select" onchange="updateNodeConfig('${node.id}', 'aspect_ratio', this.value)">
+                                <option value="16:9">16:9 (Landscape)</option>
+                                <option value="9:16">9:16 (Portrait)</option>
+                            </select>
+                        </div>
+                        <div class="property-group">
+                            <div class="property-label">Prompt Video</div>
+                            <textarea class="property-textarea" placeholder="Descrivi il video da generare..."
+                                      onchange="updateNodeConfig('${node.id}', 'prompt', this.value)">${node.config.prompt || ''}</textarea>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'edge_tts':
+                case 'elevenlabs':
+                    html += `
+                        <div class="property-group">
+                            <div class="property-label">Voce</div>
+                            <select class="property-select" onchange="updateNodeConfig('${node.id}', 'voice', this.value)">
+                                <option value="it-IT-GiuseppeNeural">Giuseppe (IT)</option>
+                                <option value="it-IT-ElsaNeural">Elsa (IT)</option>
+                                <option value="en-US-GuyNeural">Guy (EN)</option>
+                                <option value="en-US-JennyNeural">Jenny (EN)</option>
+                            </select>
+                        </div>
+                        <div class="property-group">
+                            <div class="property-label">Velocità</div>
+                            <select class="property-select" onchange="updateNodeConfig('${node.id}', 'rate', this.value)">
+                                <option value="-20%">Lento</option>
+                                <option value="+0%">Normale</option>
+                                <option value="+20%">Veloce</option>
+                                <option value="+40%">Molto Veloce</option>
+                            </select>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'trigger_schedule':
+                    html += `
+                        <div class="property-group">
+                            <div class="property-label">Cron Expression</div>
+                            <input type="text" class="property-input" value="${node.config.cron || '0 9 * * *'}"
+                                   placeholder="0 9 * * *"
+                                   onchange="updateNodeConfig('${node.id}', 'cron', this.value)">
+                            <small style="color:#666;font-size:0.8em;">Es: 0 9 * * * = ogni giorno alle 9:00</small>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'delay':
+                    html += `
+                        <div class="property-group">
+                            <div class="property-label">Secondi di Attesa</div>
+                            <input type="number" class="property-input" value="${node.config.seconds || 5}"
+                                   min="1" max="3600"
+                                   onchange="updateNodeConfig('${node.id}', 'seconds', parseInt(this.value))">
+                        </div>
+                    `;
+                    break;
+                    
+                case 'http':
+                    html += `
+                        <div class="property-group">
+                            <div class="property-label">Metodo</div>
+                            <select class="property-select" onchange="updateNodeConfig('${node.id}', 'method', this.value)">
+                                <option value="GET">GET</option>
+                                <option value="POST">POST</option>
+                                <option value="PUT">PUT</option>
+                                <option value="DELETE">DELETE</option>
+                            </select>
+                        </div>
+                        <div class="property-group">
+                            <div class="property-label">URL</div>
+                            <input type="text" class="property-input" value="${node.config.url || ''}"
+                                   placeholder="https://api.example.com/endpoint"
+                                   onchange="updateNodeConfig('${node.id}', 'url', this.value)">
+                        </div>
+                        <div class="property-group">
+                            <div class="property-label">Body (JSON)</div>
+                            <textarea class="property-textarea" placeholder="{}"
+                                      onchange="updateNodeConfig('${node.id}', 'body', this.value)">${node.config.body || ''}</textarea>
+                        </div>
+                    `;
+                    break;
+            }
+            
+            content.innerHTML = html;
+        }
+        
+        // Hide Properties
+        function hideProperties() {
+            const content = document.getElementById('propertiesContent');
+            content.innerHTML = `
+                <div style="color: #666; text-align: center; padding: 40px 20px;">
+                    <i class="fas fa-mouse-pointer" style="font-size: 2em; margin-bottom: 15px;"></i>
+                    <p>Seleziona un nodo per vedere le sue proprietà</p>
+                </div>
+            `;
+        }
+        
+        // Update node property
+        function updateNodeProperty(nodeId, prop, value) {
+            const node = nodes.find(n => n.id === nodeId);
+            if (node) {
+                node[prop] = value;
+                const nodeEl = document.getElementById(nodeId);
+                if (nodeEl && prop === 'name') {
+                    const titleEl = nodeEl.querySelector('.node-title');
+                    const badge = titleEl.querySelector('.node-type-badge');
+                    titleEl.innerHTML = badge.outerHTML + ' ' + value;
+                }
+            }
+        }
+        
+        // Update node config
+        function updateNodeConfig(nodeId, key, value) {
+            const node = nodes.find(n => n.id === nodeId);
+            if (node) {
+                node.config[key] = value;
+                const nodeEl = document.getElementById(nodeId);
+                if (nodeEl) {
+                    const contentEl = nodeEl.querySelector('.node-content');
+                    contentEl.textContent = getNodeDescription(node);
+                }
+            }
+        }
+        
+        // Run Workflow
+        async function runWorkflow() {
+            if (nodes.length === 0) {
+                alert('Aggiungi almeno un nodo al workflow!');
+                return;
+            }
+            
+            showLog();
+            addLog('🚀 Avvio workflow...', 'info');
+            
+            // Sort nodes by connections (topological sort simplified)
+            const orderedNodes = [...nodes];
+            
+            for (const node of orderedNodes) {
+                const nodeEl = document.getElementById(node.id);
+                nodeEl.classList.add('node-running');
+                addLog(`⚙️ Esecuzione: ${node.name}`, 'info');
+                
+                try {
+                    const result = await executeNode(node);
+                    addLog(`✅ ${node.name}: Completato`, 'success');
+                    if (result) addLog(`   Output: ${JSON.stringify(result).substring(0, 100)}...`, 'info');
+                } catch (e) {
+                    addLog(`❌ ${node.name}: ${e.message}`, 'error');
+                }
+                
+                nodeEl.classList.remove('node-running');
+                await sleep(500);
+            }
+            
+            addLog('🎉 Workflow completato!', 'success');
+        }
+        
+        // Execute single node
+        async function executeNode(node) {
+            switch (node.type) {
+                case 'chat':
+                    return await fetch(`${API_BASE}/hub/chat`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            message: node.config.prompt || 'Test message',
+                            provider: node.service,
+                            model: node.config.model
+                        })
+                    }).then(r => r.json());
+                    
+                case 'voice':
+                    return await fetch(`${API_BASE}/hub/tts`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            text: node.config.text || 'Test audio',
+                            provider: node.service,
+                            voice: node.config.voice
+                        })
+                    }).then(r => r.json());
+                    
+                case 'delay':
+                    await sleep(node.config.seconds * 1000);
+                    return { delayed: node.config.seconds };
+                    
+                default:
+                    return { simulated: true, node: node.name };
+            }
+        }
+        
+        // Save Workflow
+        async function saveWorkflow() {
+            const name = prompt('Nome del workflow:', 'My Workflow');
+            if (!name) return;
+            
+            const workflow = {
+                name,
+                nodes,
+                connections,
+                created_at: new Date().toISOString()
+            };
+            
+            try {
+                const response = await fetch(`${API_BASE}/hub/workflows`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(workflow)
+                });
+                
+                if (response.ok) {
+                    alert('✅ Workflow salvato!');
+                } else {
+                    // Fallback: save to localStorage
+                    localStorage.setItem(`workflow_${name}`, JSON.stringify(workflow));
+                    alert('✅ Workflow salvato localmente!');
+                }
+            } catch (e) {
+                localStorage.setItem(`workflow_${name}`, JSON.stringify(workflow));
+                alert('✅ Workflow salvato localmente!');
+            }
+        }
+        
+        // Clear Canvas
+        function clearCanvas() {
+            if (confirm('Sei sicuro di voler cancellare tutto?')) {
+                nodes.forEach(n => {
+                    const el = document.getElementById(n.id);
+                    if (el) el.remove();
+                });
+                nodes = [];
+                connections = [];
+                updateConnections();
+                deselectAll();
+                document.getElementById('canvasOverlay').style.display = '';
+            }
+        }
+        
+        // Templates
+        function openTemplates() {
+            document.getElementById('templatesModal').classList.add('active');
+        }
+        
+        function closeTemplates() {
+            document.getElementById('templatesModal').classList.remove('active');
+        }
+        
+        function loadTemplate(templateId) {
+            clearCanvas();
+            closeTemplates();
+            
+            const templates = {
+                content_creator: [
+                    { service: 'openrouter', type: 'chat', name: 'Generate Script', x: 100, y: 100 },
+                    { service: 'dalle', type: 'image', name: 'Generate Image', x: 350, y: 50 },
+                    { service: 'veo', type: 'video', name: 'Generate Video', x: 350, y: 170 },
+                    { service: 'suno', type: 'music', name: 'Generate Music', x: 600, y: 100 }
+                ],
+                video_production: [
+                    { service: 'openrouter', type: 'chat', name: 'Write Script', x: 100, y: 100 },
+                    { service: 'dalle', type: 'image', name: 'Storyboard', x: 350, y: 50 },
+                    { service: 'veo', type: 'video', name: 'Video Gen', x: 350, y: 170 },
+                    { service: 'edge_tts', type: 'voice', name: 'Voice Over', x: 600, y: 100 }
+                ],
+                daily_report: [
+                    { service: 'trigger_schedule', type: 'trigger', name: 'Daily 9AM', x: 100, y: 100 },
+                    { service: 'http', type: 'action', name: 'Fetch Data', x: 350, y: 100 },
+                    { service: 'openrouter', type: 'chat', name: 'Analyze', x: 600, y: 100 },
+                    { service: 'email', type: 'action', name: 'Send Report', x: 850, y: 100 }
+                ],
+                voice_assistant: [
+                    { service: 'trigger_webhook', type: 'trigger', name: 'Voice Input', x: 100, y: 100 },
+                    { service: 'openrouter', type: 'chat', name: 'Process', x: 350, y: 100 },
+                    { service: 'edge_tts', type: 'voice', name: 'Respond', x: 600, y: 100 }
+                ]
+            };
+            
+            const template = templates[templateId] || [];
+            document.getElementById('canvasOverlay').style.display = 'none';
+            
+            template.forEach((t, i) => {
+                createNode(t.service, t.type, t.name, t.x, t.y);
+            });
+            
+            // Auto-connect in sequence
+            setTimeout(() => {
+                for (let i = 0; i < nodes.length - 1; i++) {
+                    connections.push({ from: nodes[i].id, to: nodes[i+1].id });
+                }
+                updateConnections();
+            }, 100);
+        }
+        
+        // Import/Export
+        function importWorkflow() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    try {
+                        const data = JSON.parse(ev.target.result);
+                        clearCanvas();
+                        document.getElementById('canvasOverlay').style.display = 'none';
+                        
+                        data.nodes.forEach(n => {
+                            createNode(n.service, n.type, n.name, n.x, n.y);
+                        });
+                        
+                        setTimeout(() => {
+                            connections = data.connections || [];
+                            updateConnections();
+                        }, 100);
+                        
+                        alert('✅ Workflow importato!');
+                    } catch (err) {
+                        alert('❌ File non valido');
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+        
+        function exportWorkflow() {
+            const data = {
+                name: prompt('Nome del workflow:', 'My Workflow') || 'workflow',
+                nodes,
+                connections,
+                exported_at: new Date().toISOString()
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${data.name.replace(/\s+/g, '_')}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+        
+        // Execution Log
+        function showLog() {
+            document.getElementById('executionLog').classList.add('active');
+            document.getElementById('logContent').innerHTML = '';
+        }
+        
+        function closeLog() {
+            document.getElementById('executionLog').classList.remove('active');
+        }
+        
+        function addLog(message, type = 'info') {
+            const log = document.getElementById('logContent');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        }
+        
+        // Utility
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+    </script>
+</body>
+</html>

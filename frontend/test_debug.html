@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>GIDEON Debug Test</title>
+    <style>
+        body { 
+            background: #0a0a12; 
+            color: white; 
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .test-btn {
+            padding: 15px 30px;
+            margin: 10px;
+            background: #00f5ff;
+            border: none;
+            border-radius: 8px;
+            color: #000;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .test-btn:hover { background: #00d4e0; }
+        #output {
+            background: #1a1a2e;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            min-height: 300px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .success { color: #00ff88; }
+        .error { color: #ff3366; }
+        .info { color: #00f5ff; }
+    </style>
+</head>
+<body>
+    <h1>🔧 GIDEON Debug Test Page</h1>
+    
+    <div>
+        <button class="test-btn" onclick="testServerHealth()">🏥 Test Server Health</button>
+        <button class="test-btn" onclick="testChatAPI()">💬 Test Chat API</button>
+        <button class="test-btn" onclick="testTTS()">🔊 Test TTS</button>
+        <button class="test-btn" onclick="testCAM()">🎯 Test CAM API</button>
+        <button class="test-btn" onclick="clearOutput()">🗑️ Clear</button>
+    </div>
+    
+    <div id="output"></div>
+    
+    <script>
+        const API_BASE = 'http://127.0.0.1:8001';
+        const output = document.getElementById('output');
+        
+        function log(msg, type = 'info') {
+            const time = new Date().toLocaleTimeString();
+            output.innerHTML += `<span class="${type}">[${time}] ${msg}</span>\n`;
+            output.scrollTop = output.scrollHeight;
+        }
+        
+        function clearOutput() {
+            output.innerHTML = '';
+        }
+        
+        async function testServerHealth() {
+            log('Testing server health...', 'info');
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                if (response.ok) {
+                    const data = await response.json();
+                    log(`✅ Server OK: ${JSON.stringify(data)}`, 'success');
+                } else {
+                    log(`❌ Server returned ${response.status}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Server error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testChatAPI() {
+            log('Testing Chat API...', 'info');
+            try {
+                const response = await fetch(`${API_BASE}/api/chat/send`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: 'Test message from debug page' })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log(`✅ Chat API OK`, 'success');
+                    log(`Response: ${JSON.stringify(data).substring(0, 200)}...`, 'info');
+                } else {
+                    log(`❌ Chat API returned ${response.status}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Chat API error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testTTS() {
+            log('Testing TTS API...', 'info');
+            try {
+                const response = await fetch(`${API_BASE}/api/tts/speak`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: 'Test vocale GIDEON' })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log(`✅ TTS API OK: ${JSON.stringify(data)}`, 'success');
+                } else {
+                    log(`❌ TTS API returned ${response.status}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ TTS API error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testCAM() {
+            log('Testing CAM API...', 'info');
+            try {
+                const response = await fetch(`${API_BASE}/api/cam/status`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log(`✅ CAM API OK`, 'success');
+                    log(`Status: ${data.status}, Crisis Level: ${data.crisis_level}`, 'info');
+                } else {
+                    log(`❌ CAM API returned ${response.status}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ CAM API error: ${error.message}`, 'error');
+            }
+        }
+        
+        // Run initial test
+        log('🚀 GIDEON Debug Page Loaded', 'success');
+        log('Click buttons to test different APIs', 'info');
+    </script>
+</body>
+</html>
