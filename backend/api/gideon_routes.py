@@ -154,7 +154,7 @@ async def get_orchestrator_status():
     status = {
         "orchestrator": _orchestrator.get_status() if _orchestrator else None,
         "gideon": _gideon_core is not None,
-        "jarvis": _jarvis_core.get_cognitive_status() if _jarvis_core else None,
+        "jarvis": _jarvis_core.get_supervisor_status() if _jarvis_core else None,
         "mode": _mode_manager.get_mode_info() if _mode_manager else None,
         "emergency": _emergency_system.get_status() if _emergency_system else None,
         "timestamp": datetime.now().isoformat()

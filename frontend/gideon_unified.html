@@ -6738,10 +6738,10 @@ ${JSON.stringify(state, null, 2)}
         async function executeAction(action, params = {}) {
             debugLog('info', `⚡ Executing action: ${action}`);
             try {
-                const response = await fetch(`${API_BASE}/api/action`, {
+                const response = await fetch(`${API_BASE}/api/actions/execute`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action, params })
+                    body: JSON.stringify({ action_type: action, parameters: params })
                 });
                 const result = await response.json();
                 if (result.success) {
@@ -6821,9 +6821,18 @@ ${JSON.stringify(state, null, 2)}
             addLog(`[EMERGENCY] ${action.toUpperCase()}`);
             
             try {
-                const response = await fetch(`${API_BASE}/api/emergency/${action}`, {
+                // Map action to correct endpoint
+                let endpoint = `${API_BASE}/api/system/emergency`;
+                if (action === 'kill') {
+                    endpoint = `${API_BASE}/api/security/kill-switch/emergency`;
+                } else if (action === 'resume') {
+                    endpoint = `${API_BASE}/api/cam/resume`;
+                }
+                
+                const response = await fetch(endpoint, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action })
                 });
                 const result = await response.json();
                 if (result.success) {
@@ -7872,10 +7881,10 @@ ${JSON.stringify(state, null, 2)}
                         // Execute action directly
                         try {
                             addLog(`[ACTION] Executing: ${action}`);
-                            const response = await fetch(`${API_BASE}/api/action`, {
+                            const response = await fetch(`${API_BASE}/api/actions/execute`, {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ action, params })
+                                body: JSON.stringify({ action_type: action, parameters: params })
                             });
                             const result = await response.json();
                             if (result.success) {
@@ -7897,12 +7906,8 @@ ${JSON.stringify(state, null, 2)}
             state.aiProvider = provider;
             addLog(`[AI] Provider changed to: ${provider}`);
             
-            // Update backend preference (optional)
-            fetch(`${API_BASE}/api/system/provider`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ provider })
-            }).catch(err => console.warn('Could not update provider preference:', err));
+            // Provider is stored client-side and sent with each request
+            // No backend endpoint needed
         }
         
         function changeResponseMode(mode) {
