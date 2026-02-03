@@ -4896,7 +4896,7 @@
                             <button class="quick-action" onclick="captureScreenshot()" title="Screenshot">🖼️</button>
                             <button class="quick-action" id="input-mic-btn" onclick="toggleMicrophone()" title="Attiva microfono">🎤</button>
                         </div>
-                        <textarea class="chat-textarea" id="chat-input" placeholder="Scrivi un messaggio o usa il microfono per parlare con GIDEON..." rows="1"></textarea>
+                        <textarea class="chat-textarea" id="chat-input" placeholder="Scrivi un messaggio e premi INVIO per inviare (Shift+Invio per nuova riga)..." rows="1"></textarea>
                         <button class="send-btn" id="send-btn" title="Invia messaggio">➤</button>
                     </div>
                     
@@ -4926,6 +4926,7 @@
                             </label>
                         </div>
                         <div style="display: flex; gap: 10px;">
+                            <button onclick="toggleDebugMode()" style="background: transparent; border: 1px solid rgba(255,102,0,0.5); color: #ff6600; padding: 4px 10px; border-radius: 4px; font-size: 11px; cursor: pointer;">🐛 Debug</button>
                             <button onclick="clearChat()" style="background: transparent; border: 1px solid rgba(255,51,102,0.5); color: #ff3366; padding: 4px 10px; border-radius: 4px; font-size: 11px; cursor: pointer;">🗑️ Clear</button>
                             <button onclick="exportChat()" style="background: transparent; border: 1px solid rgba(0,245,255,0.5); color: #00f5ff; padding: 4px 10px; border-radius: 4px; font-size: 11px; cursor: pointer;">📥 Export</button>
                         </div>
