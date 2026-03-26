@@ -313,7 +313,15 @@ app.include_router(gideon_router, prefix="/api")
 app.include_router(jarvis_router, prefix="/api")
 app.include_router(system_router, prefix="/api")
 
-# NEW: GIDEON UNIFIED routes (Single Assistant API)
+# NEW: GIDEON 4.0 UNIFIED routes (Ultimate Single Entry Point)
+try:
+    from api.gideon_v4_routes import router as gideon_v4_router
+    app.include_router(gideon_v4_router, prefix="/api")
+    logger.info("✅ GIDEON 4.0 routes loaded (Ultimate Unified AI)")
+except ImportError as e:
+    logger.warning(f"⚠️ GIDEON 4.0 routes not loaded: {e}")
+
+# GIDEON UNIFIED routes (Legacy - Assistente Unificato)
 try:
     from api.gideon_unified_routes import router as gideon_unified_router
     app.include_router(gideon_unified_router, prefix="/api")
@@ -590,7 +598,7 @@ if __name__ == "__main__":
     logger.info("🚀 Starting GIDEON Backend Server...")
     uvicorn.run(
         "main:app",
-        host="127.0.0.1",
+        host="0.0.0.0",
         port=8001,
         reload=False,
         log_level="info"

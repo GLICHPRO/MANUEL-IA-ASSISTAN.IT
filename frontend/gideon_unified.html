@@ -1,8 +1,12 @@
 <!DOCTYPE html>
+<!-- VERSIONE AGGIORNATA 2026-02-10 14:42 - FIX LAYOUT RESPONSIVE E CONNESSIONE -->
 <html lang="it">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>GIDEON 4.0 - Unified Intelligence Platform</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Exo+2:wght@300;400;500;600;700&family=Share+Tech+Mono&family=Audiowide&family=Electrolize&display=swap" rel="stylesheet">
     <style>
@@ -40,12 +44,16 @@
         
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+        }
+        
         body {
             font-family: 'Exo 2', 'Electrolize', sans-serif;
             background: var(--dark-bg);
-            min-height: 100vh;
             color: #fff;
-            overflow-x: hidden;
             letter-spacing: 0.5px;
         }
         
@@ -188,7 +196,10 @@
             grid-template-columns: 280px 1fr 320px;
             grid-template-rows: 70px 1fr;
             height: 100vh;
+            width: 100vw;
+            max-width: 100%;
             gap: 0;
+            overflow: hidden;
         }
         
         /* ============ TOP BAR - ENHANCED ============ */
@@ -1550,9 +1561,11 @@
             background: linear-gradient(180deg, rgba(8,8,15,0.98) 0%, rgba(5,5,10,0.95) 100%);
             border-right: 1px solid var(--glass-border);
             overflow-y: auto;
+            overflow-x: hidden;
             padding: 15px;
             backdrop-filter: blur(10px);
             position: relative;
+            min-height: 0; /* Important for grid overflow */
         }
         
         .left-sidebar::before {
@@ -1727,6 +1740,8 @@
             flex-direction: column;
             background: rgba(5,5,10,0.9);
             position: relative;
+            min-height: 0; /* Important for flex overflow */
+            overflow: hidden;
         }
         
         /* Tab Navigation */
@@ -1773,6 +1788,8 @@
         .tab-content.active {
             display: flex;
             flex-direction: column;
+            min-height: 0; /* Important for flex overflow */
+            overflow: hidden;
         }
         
         /* ============ CHAT TAB ============ */
@@ -1780,6 +1797,7 @@
             flex: 1;
             overflow-y: auto;
             padding: 20px;
+            min-height: 0; /* Important for flex overflow */
         }
         
         .message {
@@ -2268,9 +2286,11 @@
             background: linear-gradient(180deg, rgba(10,10,20,0.98) 0%, rgba(5,5,15,0.98) 100%);
             border-left: 1px solid rgba(255,0,255,0.15);
             overflow-y: auto;
+            overflow-x: hidden;
             padding: 15px;
             backdrop-filter: blur(20px);
             position: relative;
+            min-height: 0; /* Important for grid overflow */
         }
         
         .right-sidebar::before {
@@ -3412,13 +3432,32 @@
         }
         
         /* ============ RESPONSIVE ============ */
-        @media (max-width: 1200px) {
+        @media (max-width: 1600px) {
             .main-container {
                 grid-template-columns: 250px 1fr 280px;
+            }
+        }
+        
+        @media (max-width: 1400px) {
+            .main-container {
+                grid-template-columns: 220px 1fr 250px;
+            }
+            .top-bar {
+                padding: 0 15px;
+            }
+        }
+        
+        @media (max-width: 1200px) {
+            .main-container {
+                grid-template-columns: 200px 1fr 220px;
             }
             
             .particles-container {
                 display: none;
+            }
+            
+            .logo-section h1 {
+                font-size: 1.2em;
             }
         }
         
@@ -3433,6 +3472,55 @@
             }
             
             .scanlines, .corner-decoration {
+                display: none;
+            }
+            
+            .chat-container {
+                border-radius: 0;
+                margin: 0;
+            }
+            
+            .top-bar {
+                padding: 0 10px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .main-container {
+                grid-template-rows: 50px 1fr;
+            }
+            
+            .logo {
+                width: 40px;
+                height: 40px;
+                font-size: 1.2em;
+            }
+            
+            .logo-section h1 {
+                font-size: 1em;
+            }
+            
+            .top-controls {
+                gap: 5px;
+            }
+            
+            .control-btn {
+                width: 35px;
+                height: 35px;
+                font-size: 0.9em;
+            }
+            
+            .chat-input-container {
+                padding: 10px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .logo-section h1 {
+                display: none;
+            }
+            
+            .mode-info {
                 display: none;
             }
         }
@@ -5974,10 +6062,38 @@
 
     <script>
         // ============ CONFIGURATION ============
-        const API_BASE = 'http://127.0.0.1:8001';
+        // GIDEON 4.0 - Unified AI System
+        // Single API endpoint for all versions
+        const API_BASE = 'http://localhost:8001';
+        const GIDEON_API = `${API_BASE}/api/gideon4`;  // GIDEON 4.0 Unified
         
         // Debug: alert if script starts
-        console.log('🚀 GIDEON SCRIPT LOADING...');
+        console.log('🚀 GIDEON 4.0 SCRIPT LOADING...');
+        console.log('📡 API endpoint:', GIDEON_API);
+        
+        // ============ STATE (defined early for connection checks) ============
+        // NOTE: This is a temporary bridge - state needs to be defined early
+        // TODO: Refactor to proper module structure in future
+        const state = {
+            currentMode: 'copilot',
+            currentTab: 'chat',
+            responseMode: 'fast',  // eco, fast, deep
+            isTTSEnabled: true,  // TTS ATTIVO DI DEFAULT per sentire GIDEON
+            isListening: false,
+            isSpeaking: false,
+            isHandsFree: false,
+            isPilotMode: false,  // Modalità PILOT per controllo autonomo
+            isConnected: false,  // Connection status
+            messages: [],
+            workflows: [],
+            sessionStartTime: Date.now(),
+            workflowNodes: [],
+            nodeIdCounter: 0,
+            recognition: null,
+            cameraStream: null,
+            sessionId: 'session_' + Date.now(),
+            apiBaseUrl: API_BASE  // For CAM and other modules
+        };
         
         // ============ CONNECTION STATUS ============
         let connectionCheckCount = 0;
@@ -6052,18 +6168,59 @@
         }
         
         // Connection check - called both immediately and on DOMContentLoaded
+        // NOTE: TEMPORARY BRIDGE - improved connection handling
+        // TODO: Refactor to proper event-driven architecture
         (function immediateConnectionCheck() {
-            // Try immediately if elements exist
-            if (document.getElementById('status-dot') && document.getElementById('status-text')) {
-                checkConnectionStatus();
+            console.log('🔌 Immediate connection check starting...');
+            
+            // Retry logic with exponential backoff
+            let retryCount = 0;
+            const maxRetries = 5;
+            
+            async function tryConnect() {
+                console.log('🔍 Attempting connection to:', `${API_BASE}/health`);
+                try {
+                    const response = await fetch(`${API_BASE}/health`, {
+                        method: 'GET',
+                        mode: 'cors',
+                        cache: 'no-cache'
+                    });
+                    
+                    console.log('📥 Response status:', response.status);
+                    
+                    if (response.ok) {
+                        console.log('✅ Connection SUCCESS!');
+                        setOnlineStatus();
+                        // Force visual update
+                        const dot = document.getElementById('status-dot');
+                        const txt = document.getElementById('status-text');
+                        if (dot) dot.style.background = '#00ff88';
+                        if (txt) { txt.textContent = 'ONLINE'; txt.style.color = '#00ff88'; }
+                        return true;
+                    }
+                } catch (e) {
+                    console.error(`❌ Connection attempt ${retryCount + 1} failed:`, e);
+                }
+                
+                retryCount++;
+                if (retryCount < maxRetries) {
+                    const delay = Math.min(1000 * Math.pow(2, retryCount), 5000);
+                    console.log(`🔄 Retrying in ${delay}ms...`);
+                    setTimeout(tryConnect, delay);
+                } else {
+                    console.log('❌ Max retries reached, setting offline');
+                    setOfflineStatus();
+                }
+                return false;
             }
-            // Also schedule for after DOM load
+            
+            // Start connection attempts
             if (document.readyState === 'loading') {
                 document.addEventListener('DOMContentLoaded', () => {
-                    setTimeout(checkConnectionStatus, 100);
+                    setTimeout(tryConnect, 300);
                 });
             } else {
-                setTimeout(checkConnectionStatus, 100);
+                setTimeout(tryConnect, 300);
             }
         })();
         
@@ -6179,7 +6336,7 @@
             showToolbarLoading(`Esecuzione: ${toolName}`);
             
             try {
-                const response = await fetch(`${API_BASE}/api/gideon/tools/execute`, {
+                const response = await fetch(`${GIDEON_API}/execute`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -6282,7 +6439,7 @@
             showToolbarLoading(`GIDEON sta elaborando: ${toolName}`);
             
             try {
-                const response = await fetch(`${API_BASE}/api/gideon/process`, {
+                const response = await fetch(`${GIDEON_API}/process`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -6373,7 +6530,7 @@
             showToolbarLoading(`Esecuzione avanzata: ${toolName}`);
             
             try {
-                const response = await fetch(`${API_BASE}/api/gideon/tools/advanced/execute`, {
+                const response = await fetch(`${GIDEON_API}/execute`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ tool, action, params })
@@ -6637,7 +6794,7 @@ ${JSON.stringify(state, null, 2)}
             
             // Check backend status
             if (backendStatus) {
-                fetch(`${API_BASE}/api/gideon/health`, { method: 'GET' })
+                fetch(`${GIDEON_API}/health`, { method: 'GET' })
                     .then(r => {
                         backendStatus.textContent = '✅ Online';
                         backendStatus.style.color = 'var(--neon-green)';
@@ -6684,7 +6841,7 @@ ${JSON.stringify(state, null, 2)}
         async function debugTestBackend() {
             debugLog('info', '🔍 Testing backend connection...');
             try {
-                const response = await fetch(`${API_BASE}/api/gideon/health`);
+                const response = await fetch(`${GIDEON_API}/health`);
                 const data = await response.json();
                 debugLog('success', `✅ Backend OK: ${JSON.stringify(data)}`);
             } catch (error) {
@@ -7547,26 +7704,8 @@ ${JSON.stringify(state, null, 2)}
         setInterval(updateDebugStats, 5000);
         
         // ============ STATE ============
-        const state = {
-            currentMode: 'copilot',
-            currentTab: 'chat',
-            responseMode: 'fast',  // eco, fast, deep
-            isTTSEnabled: true,  // TTS ATTIVO DI DEFAULT per sentire GIDEON
-            isListening: false,
-            isSpeaking: false,
-            isHandsFree: false,
-            isPilotMode: false,  // Modalità PILOT per controllo autonomo
-            isConnected: false,  // Connection status
-            messages: [],
-            workflows: [],
-            sessionStartTime: Date.now(),
-            workflowNodes: [],
-            nodeIdCounter: 0,
-            recognition: null,
-            cameraStream: null,
-            sessionId: 'session_' + Date.now(),
-            apiBaseUrl: API_BASE  // For CAM and other modules
-        };
+        // NOTE: state is now defined at the top of the script for early access
+        // This section is kept for reference - DO NOT add const state = {} here
         
         // ============ FUTURISTIC EFFECTS ============
         function initParticles() {
@@ -7959,19 +8098,17 @@ ${JSON.stringify(state, null, 2)}
             showTyping(true);
             
             try {
-                // Use the combined endpoint for chat + voice if TTS is enabled
-                const endpoint = state.isTTSEnabled 
-                    ? `${API_BASE}/api/chat/send-with-voice`
-                    : `${API_BASE}/api/chat/send`;
+                // Use GIDEON 4.0 unified endpoint
+                const endpoint = GIDEON_API;
                 
                 const response = await fetch(endpoint, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        message: text,
+                        text: text,
                         mode: state.currentMode,
                         response_mode: state.responseMode,
-                        session_id: state.sessionId || 'main'
+                        include_voice: state.isTTSEnabled
                     })
                 });
                 
@@ -10260,7 +10397,8 @@ ${JSON.stringify(state, null, 2)}
             if (avatarWS && avatarWS.readyState === WebSocket.OPEN) return;
             
             try {
-                avatarWS = new WebSocket('ws://127.0.0.1:8001/api/avatar/ws');
+                const wsUrl = API_BASE.replace('http://', 'ws://') + '/api/avatar/ws';
+                avatarWS = new WebSocket(wsUrl);
                 
                 avatarWS.onopen = () => {
                     console.log('🎭 Avatar WebSocket connected');
@@ -10418,7 +10556,7 @@ ${JSON.stringify(state, null, 2)}
             // Update HUD every 5 seconds with system info
             setInterval(async () => {
                 try {
-                    const response = await fetch('http://127.0.0.1:8001/api/system/load');
+                    const response = await fetch(`${API_BASE}/api/system/load`);
                     if (response.ok) {
                         const data = await response.json();
                         updateAvatarHUD({

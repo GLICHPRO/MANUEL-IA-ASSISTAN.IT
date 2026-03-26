@@ -58,7 +58,7 @@
     <div id="log"></div>
 
     <script>
-        const API_BASE = 'http://127.0.0.1:8001';
+        const API_BASE = 'http://localhost:8001';
         
         function log(message, type = 'info') {
             const logDiv = document.getElementById('log');
@@ -112,14 +112,14 @@
             const statusDiv = document.getElementById('api-status');
             
             try {
-                const response = await fetch(`${API_BASE}/api/gideon/unified`, {
+                const response = await fetch(`${API_BASE}/api/gideon-unified/process`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Accept': 'application/json'
                     },
                     body: JSON.stringify({
-                        message: 'Ciao, test di connessione',
+                        text: 'Ciao, test di connessione',
                         mode: 'copilot'
                     })
                 });
